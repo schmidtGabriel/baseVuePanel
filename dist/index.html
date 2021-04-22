@@ -1,0 +1,33 @@
+<!DOCTYPE html><html><head><meta charset=utf-8><link rel=apple-touch-icon sizes=76x76 href=assets/img/apple-icon.png><link rel=icon type=image/png sizes=96x96 href=static/img/logo.png><meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1"><title>Sindsep - Dashboard</title><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0"><link type=text/css href="https://fonts.googleapis.com/css?family=Muli:400,300" rel=stylesheet><link type=text/css href="https://fonts.googleapis.com/css?family=Montserrat" rel=stylesheet><link href=static/css/themify-icons.css rel=stylesheet><link href=https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css rel=stylesheet><link href="https://fonts.googleapis.com/css?family=Roboto" rel=stylesheet><script>Math.getPercent = function (q, t) {
+      return parseFloat(((q * 100) / t).toFixed(2));
+    };
+    Number.prototype.float2Money = function (places, symbol, thousand, decimal) {
+      places = !isNaN(places = Math.abs(places)) ? places : 2;
+      return _formatMoney(this.toFixed(places).replace('.', ''), places, symbol, thousand, decimal)
+    };
+
+    Number.prototype.int2Money = function (places, symbol, thousand, decimal) {
+      return _formatMoney(this, places, symbol, thousand, decimal)
+    };
+
+    function _formatMoney(number, places, symbol, thousand, decimal) {
+      places = !isNaN(places = Math.abs(places)) ? places : 2;
+      symbol = symbol !== undefined ? symbol : "R$ ";
+      thousand = thousand || ".";
+      decimal = decimal || ",";
+      let negative = number < 0 ? "-" : "";
+      let i = parseFloat(Math.abs(number || 0).toFixed(places), 10) + "";
+      i = i.length > 3 ? i : '000'.substr(i.length) + i;
+      let d = i.substr(-places);
+      i = i.substr(0, i.length - places);
+      let j = i.length > 3 ? i.length % 3 : 0;
+      return symbol +
+        negative +
+        (j ? i.substr(0, j) + thousand : "") +
+        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousand) +
+        decimal + d;
+    }
+
+    String.prototype.onlyNumber = function () {
+      return this.replace(/[^0-9]/g, '');
+    };</script><link href=/static/css/app.b0e5f09c53ef2210cda6609e8d607901.css rel=stylesheet></head><body><div id=app></div><script type=text/javascript src=/static/js/manifest.2ae2e69a05c33dfc65f8.js></script><script type=text/javascript src=/static/js/vendor.91f8efea849f488f1e24.js></script><script type=text/javascript src=/static/js/app.d306ade547c75bc8dc14.js></script></body></html>

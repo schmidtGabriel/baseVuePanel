@@ -1,0 +1,42 @@
+ESTRUTURA PAINEL VUEJS
+
+
+- src:
+    - api:
+        index.js - Chamadas para a api
+        resource.js - definidas as rotas para api
+    
+    - components:
+        - Dashboard:
+            - Layout: Arquivos padrao (não necessario alterar)
+            - Views: paginas do painel, divididas pelas categorias, cada pasta deve ter seu Criar, Listar, Editar e pagina Padrao (de acordo com necessidade.) 
+                Home.vue - Arquivo da pagina home do painel ( normalmente onde se encontra a dashboard)
+
+        - GeneralViews: 
+            Login.vue - Pagina padrao de login (não necessario alterar)
+            NotFoundPage.vue - Padrao (não necessario alterar)
+            Starter.vue - Padrao (não necessario alterar)
+
+        - UIComponentes: Arquivos de componentes genéricos ( Formularios, Listas, Inputs )
+    
+    - img: Imagens do painel.
+
+    - routes:
+        routes.js - Arquivo com as rotas do painel. ( necessario definir os arquvios no topo com suas respectivas rotas + definir as rotas hierarquicamente  )
+    
+    - store:
+        - modules: Arquivos de cada area do painel com a construção das chamadas feitas na api. (Cada função é padrao, é necessario apenas alterar nomeclaturas de acordo com o arquvi, exemplo: arquivo 'user.js' usa nomeclaturas com 'user', arquivo 'support.js' usa nomeclaturas com 'support')
+        getters.js - define o uso do sidebar do painel.
+        index.js - define os modules do painel (arquivos que estão no '/modules/...' )
+        types.js - define as constantes de retorno das chamadas utilizadas nos arquvios dentro de '/modules/...'
+    
+    - utils
+        authService.js - Arquivo com as funcoes de tratamento de usuario, salvar cookies de login, apagar cookies de login.
+
+config.js - Arquivo de configuraçao da rota padrao da api divida por debug e production.
+
+globalComponents.js - Arquivo que define os components genericos do painel que estao construidos em "/src/componentes/UIComponentes"
+
+globalDirectives.js - Arquivo que define as diretivas genericas do painel. (pouco utilizada atualmente)
+
+- static: Pasta gerada após build do painel.

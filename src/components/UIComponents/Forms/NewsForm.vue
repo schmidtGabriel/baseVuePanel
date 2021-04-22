@@ -1,0 +1,209 @@
+<template>
+  <div v-if="data">
+    <form  autocomplete="off">
+
+      <div class="row">
+
+             <div
+          class="col-md-3"
+           v-if="data.id"
+        >
+          <form-group-image
+            :url="url+'news/image/'+data.id"
+            :value="data.imageURL"
+            img-type="square"
+          />
+        </div>
+
+        <div class="col-md-12">
+          <fg-input class="clean" type="text" label="Titulo" placeholder="Titulo" v-model="data.title"
+            v-bind:readonly="readonly" />
+        </div>
+
+     <div class="col-md-12">
+          <fg-textarea
+            class="clean"
+            type="text"
+            label="Descrição"
+            placeholder=""
+            v-model="data.description"
+            v-bind:readonly="readonly"
+            :isHtml="false"
+
+          />
+        </div>
+
+        <div class="col-md-12">
+          <label style="font-size: 16px"> Está em detaque? </label>
+        </div>
+          <div class="col-md-12">
+                <button
+                class="btn btn-rounded btn-fill btn-wd"
+                :class="[{'btn-success': this.data.isFeatured}, {' ': !this.data.isFeatured}]"
+                style="padding-left: 10px; padding-right: 10px"
+                v-on:click="checkIsFeatured(true)"
+              >
+              <font> Destaque </font>
+              
+              </button>
+              <button
+                class="btn btn-rounded btn-fill btn-wd"
+                :class="[{' btn-danger': !this.data.isFeatured}, {' ': this.data.isFeatured}]"
+                style="padding-left: 10px; padding-right: 10px"
+                v-on:click="checkIsFeatured(false)"
+              >
+              <font> Não Destaque </font>
+              
+              </button>
+        </div>
+      
+
+        <div class="col-md-12 text-right">
+      <btn-rounded
+        v-if="!readonly"
+        label="SALVAR"
+        event="execute"
+      />
+    </div>
+
+  </div>
+
+
+    </form>
+  </div>
+</template>
+
+<script>
+  import {
+    mapActions,
+    mapState,
+    mapGetters
+  } from "vuex";
+  import moment from 'moment';
+  import formGroupImage from 'src/components/UIComponents/Inputs/formGroupImage.vue';
+  import { NAMES } from '../../../config';
+
+
+  export default {
+    name: "news-form",
+    components: {
+    formGroupImage
+    },
+
+    props: {
+      data: {
+        type: Object,
+      },
+      readonly: {
+        type: Boolean,
+        default: false
+      },
+      event: {
+        type: String,
+        default: ''
+      },
+      edit: {
+        type: Boolean,
+        default: false
+      },
+        url: {
+        type: String,
+        default: NAMES.fullUrl
+      }
+    },
+
+    computed: {
+      ...mapState({
+       
+      })
+    },
+
+    methods: {
+      ...mapActions([""]),
+      ...mapGetters({
+        sidebarFlag: 'sidebarFlag'
+      }),
+  
+      formatDate(date) {
+        return moment.utc(date).utcOffset(0).format('DD/MM/YYYY HH:mm:ss')
+      },
+
+
+      checkIsFeatured(isFeatured){
+        this.data.isFeatured = isFeatured
+      }
+
+      // execute() {
+      //   console.log("x")
+      //   if (this.event) {
+          
+
+      //     this.$parent.$emit(this.event, this.data);
+      //   }
+      // },
+    },
+
+    created() {
+      if(this.data.isFeatured == undefined){
+        this.data.isFeatured = false
+      }
+
+      this.$on("execute", () => {
+
+        if(this.event){
+
+        if(!this.data.title || this.data.title == ""){
+           return this.$notify({
+                group: "foo",
+                title: "Atenção",
+                text: "Campo Titulo é obrigatório",
+                position: "top center",
+                type: "warn"
+              });
+        }
+
+          if(!this.data.description || this.data.description == ""){
+           return this.$notify({
+                group: "foo",
+                title: "Atenção",
+                text: "Campo Descrição é obrigatório",
+                position: "top center",
+                type: "warn"
+              });
+        }
+      
+
+        this.$parent.$emit(this.event, this.data);
+
+        }
+      });
+
+    },
+    data() {
+      return {
+        localReadonly: false,
+      
+      };
+    },
+
+  };
+</script>
+
+<style scoped lang="scss">
+
+label.stronger {
+  font-weight: bold;
+  color: black;
+}
+
+.stronger {
+  font-weight: bold;
+  color: black;
+  margin: 15px 0 0 0 !important;
+}
+
+p.subject {
+  color: #9c9c9c;
+}
+
+</style>

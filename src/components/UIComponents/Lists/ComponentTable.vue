@@ -1,0 +1,422 @@
+<template>
+  <div>
+    <div class="header">
+      <slot name="header">
+        <h4 class="title">{{title}}</h4>
+        <p class="category">{{subTitle}}</p>
+        <p class="category">Qnt: {{data ? data.length : 0}}</p>
+      </slot>
+    </div>
+    <div class="content table-responsive table-full-width">
+      <table class="table" :class="tableClass">
+        <thead>
+          <tr>
+            <th v-if="checkOn">
+              <input type="checkbox" v-model="checkAll" @click="toggleSelect(checkAll)">
+            </th>
+            <th v-for="header in headers"  v-on:click="getNamebyIndex(headers.indexOf(header))" :class="[{'headerSelectAsc': headerOrder == header && tipoOrder == 'Asc'}, {'headerSelectDesc': headerOrder == header && tipoOrder == 'Desc'}]" >
+             {{header}} 
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in getData" :class="selectId == item.id?'selectRow':''" >
+            <td v-if="checkOn">
+              <input type="checkbox" v-model="item.checked" v-on:click="SelectOne(item)">
+            </td>
+
+            <td v-for="column in columns" v-if="hasValue(item, column)" v-on:click="sendEvent(item)" v-html="itemValue(item, column)"  >
+              
+            </td>
+           
+            <td align="left" v-if="buttons.length > 0 " >
+             
+              <img v-for="buttom in buttons" :src="buttom.icon" v-on:click="execute(buttom.event, item)" style="margin: 5px" v-if="itemValue(item, buttom.column) == '0'" />
+              <label style="color: red" v-if="item.status == '-1'" > Cancelada</label>
+              <label style="color: green" v-if="item.status == '1'" > Confirmada</label>
+            </td>
+
+             <td v-for="btn in buttonStatus" align="left">
+              <button v-on:click="execute(btn.event, item)" :class="getColor(btn, item)"
+                class="btn btn-wd btn-rounded border-input btn-fill ">
+               {{itemValue(item, btn.column) == true? 'Confirmado':'Pendente'}}
+              </button>
+            </td>
+
+            <td v-for="ctrl in control" align="right">
+
+              <button v-on:click="execute(ctrl.event, item)" :class="ctrl.class">
+                {{ctrl.texto}}
+              </button>
+
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</template>
+<script>
+  import {mapActions, mapState, mapGetters} from "vuex";
+  import Vue from "vue";
+  import _ from 'lodash';
+
+  export default {
+    name: "component-table",
+    props: {
+      headers: Array,
+      columns: Array,
+      data: Array,
+      type: {
+        type: String, // striped | hover
+        default: "striped"
+      },
+      title: {
+        type: String,
+        default: ''
+      },
+      eventName: {
+        type: String,
+        default: ''
+      },
+      eventNameData: {
+        type: String,
+        default: ''
+      },
+      subTitle: {
+        type: String,
+        default: ""
+      },
+       control: {
+        type: Array,
+        default: function () {
+          return [];
+        }
+      },
+      
+       buttons: {
+        type: Array,
+        default: function () {
+          return [];
+        }
+      },
+      buttonStatus: {
+        type: Array,
+        default: function () {
+          return [];
+        }
+      },
+      checkOn: {
+        type: Boolean,
+      }
+    },
+    data() {
+      
+      return {
+        checkAll: false,
+        columnOrder: '',
+        headerOrder: '',
+        tipoOrder: 'Desc',
+        selectId: '',
+        dataAux: []
+      };
+    },
+    computed: {
+      tableClass() {
+        return `table-${this.type}`;
+      },
+
+       getData(){ 
+          this.dataAux = this.data           
+          this.orderArray(false)
+          return this.dataAux
+      }
+    
+    },
+
+
+
+    methods: {
+      getColor(btn, item){
+      var status =  this.itemValue(item, btn.column)
+
+      switch(status){
+
+        case true:
+          return 'btn-success'
+          break
+
+        case false:
+          return 'btn-danger'
+          break
+          
+      }
+    },
+       
+      orderArray(change){
+         
+        if(this.columnOrder != ""){
+          if(change == true){
+            if(this.tipoOrder == "Desc"){
+              this.tipoOrder = "Asc"
+              this.dataAux =  _.sortBy(this.data, this.columnOrder)
+            }else{
+              this.tipoOrder = "Desc"
+              this.dataAux = _.sortBy(this.data, this.columnOrder).reverse()
+            }
+        }else{
+            if(this.tipoOrder == "Desc"){
+              this.tipoOrder = "Desc"
+              this.dataAux =  _.sortBy(this.data, this.columnOrder).reverse()
+            }else{
+              this.tipoOrder = "Asc"
+              this.dataAux = _.sortBy(this.data, this.columnOrder)
+            }
+          }
+         }
+
+          
+      },
+
+      getNamebyIndex(columnIndex){
+        this.columnOrder = this.columns[columnIndex]
+        this.headerOrder = this.headers[columnIndex]
+        this.orderArray(true)
+      },
+      hasValue(item, column) {
+        return item[column] !== "undefined";
+      },
+      
+      itemValue(item, column) {
+        if (!column) return '';
+        return this.getValue(item, column)
+      },
+      sendEvent(data) {
+        if (this.eventName) {
+          this.selectId = data.id
+          this.$parent.$emit(this.eventName, data);
+        }
+      },
+      sendEventData(data) {
+        if (this.eventNameData) {
+          this.$parent.$emit(this.eventNameData, data);
+        }
+      },
+
+      SelectOne(data){
+        if(!data.checked){
+            data.checked = true;
+        }else{
+            data.checked = false;
+        }
+      },
+      
+     
+      
+      toggleSelect: function (checkall) {
+        if (!checkall) {
+          this.dataAux.forEach(function (user) {
+            Vue.set(user, "checked", true);
+          });
+        } else {
+          this.dataAux.forEach(function (user) {
+            Vue.set(user, "checked", false);
+          });
+        }
+      },
+      
+      getColumnName(obj) {
+        if(typeof obj === 'string') return obj;
+        return obj.columnName;
+      },
+      getValue(item, column) {
+        let columnName = this.getColumnName(column);
+        let colList = columnName.split(".");
+        let value = item;
+        for(let i of colList){
+          if((typeof value === 'undefined' || value === null)){
+            return null;
+          }
+          let idx = parseInt(i);
+          idx = isNaN(idx) ? i : idx;
+          value = value[idx];
+        }
+        if((typeof value === 'undefined' || value === null)){
+          return null;
+        }
+
+        return this.configValue(value, column);
+      },
+      configValue(value, columnData){
+        if(typeof columnData === 'string') {
+          // if(columnData.toUpperCase().indexOf('IMEI') !== -1){
+          //   let path = window.location.pathname === '/' ? '' : window.location.pathname;
+          //   return `<a href="${path}/?#/admin/blacklist/imei/${value}">${value}</a>`
+          // }
+          return value;
+        }
+        if(columnData.prefix){
+          value = `${columnData.prefix} ${value}`;
+        }
+        if(columnData.logic && typeof columnData.logic === 'function'){
+          value = columnData.logic(value, columnData);
+        }
+        return value;
+      },
+      execute(event, data) {
+        if (event) {
+          this.$parent.$emit(event, data);
+        }
+      },
+    },
+    
+  };
+</script>
+<style scoped lang="scss">
+  .table-striped tbody > tr  {
+    cursor: pointer;
+  }
+.table-striped thead > tr  {
+    cursor: pointer;
+
+   :hover{
+      background-color: #c2d4da57;
+    }
+
+  }
+  .selectRow{
+      background-color: #c2d4da57 !important;
+    }
+   .headerSelectAsc{
+      background-color: #c2d4da57;
+    }
+    .headerSelectDesc{
+      background-color: #9cb2b957;
+    }
+
+  .table-striped tbody > tr:nth-of-type(2n + 1):hover {
+    background-color: #68b3c857;
+  }
+
+  .table-striped tbody > tr:nth-of-type(2n) {
+    background-color: #f0f0f0;
+  }
+
+  .table-striped tbody > tr:nth-of-type(2n):hover {
+    background-color: #68b3c857;
+  }
+
+  td,
+  th {
+    padding: 5px 8px;
+  }
+
+
+  @media only screen and (max-width: 991px) {
+    .card .content {
+      padding: 15px 0px;
+    }
+
+    .table-responsive {
+      border: none !important
+
+    }
+  }
+
+  .tooltip {
+  z-index: 9999 !important;
+
+  .tooltip-inner {
+    background: black;
+    color: white;
+    border-radius: 16px;
+    padding: 5px 10px 4px;
+  }
+
+  .tooltip-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    position: absolute;
+    margin: 5px;
+    border-color: black;
+    z-index: 1;
+  }
+
+  &[x-placement^="top"] {
+    margin-bottom: 5px;
+
+    .tooltip-arrow {
+      border-width: 5px 5px 0 5px;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+      border-bottom-color: transparent !important;
+      bottom: -5px;
+      left: calc(50% - 5px);
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  &[x-placement^="bottom"] {
+    margin-top: 5px;
+
+    .tooltip-arrow {
+      border-width: 0 5px 5px 5px;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+      border-top-color: transparent !important;
+      top: -5px;
+      left: calc(50% - 5px);
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  &[x-placement^="right"] {
+    margin-left: 5px;
+
+    .tooltip-arrow {
+      border-width: 5px 5px 5px 0;
+      border-left-color: transparent !important;
+      border-top-color: transparent !important;
+      border-bottom-color: transparent !important;
+      left: -5px;
+      top: calc(50% - 5px);
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  &[x-placement^="left"] {
+    margin-right: 5px;
+
+    .tooltip-arrow {
+      border-width: 5px 0 5px 5px;
+      border-top-color: transparent !important;
+      border-right-color: transparent !important;
+      border-bottom-color: transparent !important;
+      right: -5px;
+      top: calc(50% - 5px);
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  &[aria-hidden='true'] {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .15s, visibility .15s;
+  }
+
+  &[aria-hidden='false'] {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .15s;
+  }
+}
+
+
+</style>
